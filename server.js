@@ -5,7 +5,7 @@ var
     , io = require( 'socket.io' ).listen( server )
     , port = process.env.PORT || 5000
     , players = []
-    , maxPlayers = 2
+    , maxPlayers = 3
     , potatoPosition = 0
     , timer = null
 ;
@@ -22,7 +22,7 @@ app.use( express.static( __dirname + '/static/' ) );
 function getPlayersRemaining() {
     var numPlayers = 0;
     for ( var i in players ) {
-        if ( players[ i ].alive ) {
+        if ( players[ i ] && players[ i ].alive ) {
             numPlayers++;
         }
     }
@@ -43,7 +43,7 @@ function movePotato( offset ) {
 
     player = players[ potatoPosition ];
 
-    if ( player.alive ) {
+    if ( player && player.alive ) {
         console.log( 'potato moved', potatoPosition, JSON.stringify( player ) );
         io.sockets.emit( 'potato moved', player );
     } else if ( getPlayersRemaining() ) {
