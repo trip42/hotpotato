@@ -2,68 +2,23 @@
 <html>
 <head>
     <style>
-        body {
-            background-color: black;
-            color: white;
-            font-family: arial;
-        }
-
-        #gameboard {
-            height: 500px;
-            width: 800px;
-            background-color: green;
-            position: relative;
-            cursor: none;
-            overflow: hidden;
-            float: left;
-        }
-
-        #scoreboard {
-            width: 200px;
-            float: left;
-        }
-
-        .bomber {
-            height: 20px;
-            width: 20px;
-            border-radius: 10px;
-            margin: -10px 0px 0px -10px;
-            background-color: black;
-            border: 1px solid white;
-            position: absolute;
-        }   
-
-        .bomber.ignited {
-            background-color: yellow !important;
-        }
-
-        .bomber.exploded {
-            height: 200px;
-            width: 200px;
-            margin: -100px 0px 0px -100px;
-            border-radius: 100px;
-            background-color: red !important;
-        }
     </style>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
 
-    <h1>Node Igniter</h1>
+    <div id="msg"></div>
+    <button id="pass-left">Left</button>
+    <button id="pass-right">Right</button>
 
-    <div id="gameboard"></div>
-    <ol id="scoreboard"></ol>
-
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script>
 
         (function() {
 
             var 
-                socket = io.connect(window.location.href) 
-                , name
-                , boardOffset = $('#gameboard').position()
+                socket = io.connect( window.location.href ) 
             ;
 
             name = prompt('What is your name?');
@@ -71,31 +26,14 @@
             if (name) {
                 socket.emit('join', name);
 
-                // Out going events
-        
-                // handle mouse movement within the gameboard
-                // send the mouse move events to the server over
-                // the web socket
-                $('#gameboard').mousemove(_.throttle(function(event) {
-                    socket.emit(
-                        'move', 
-                        event.pageX - boardOffset.left,
-                        event.pageY - boardOffset.top
-                    );
-                }, 150));
-        
-                // handle click events to ignite the bomb
-                // by sending an ignite event to the server
-                $('#gameboard').click(function(event) {
-                    socket.emit('ignite');
+                $( '#pass-left' ).click( function() {
+                    socket.emit( 'pass-left' );
                 });
-        
-        
-                // Incoming events
-        
-                // when a player joins create a DOM element
-                // with the appropriate ID and Position and
-                // add it to the gameboard
+
+                $( '#pass-right' ).click( function() {
+                    socket.emit( 'pass-right' );
+                });
+                
                 socket.on('join', function(bomber) {
                     var jqBomber = $('<div class="bomber"></div>');
                     jqBomber.attr('id', bomber.id);

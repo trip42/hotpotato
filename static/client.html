@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+</head>
+<body style="text-align: center;">
+
+    <div id="potato">
+        <img src="/potato.jpg" alt="potato" />
+    </div>
+
+    <audio id="sound" loop="true">
+      <source src="hotpotato.mp3" type="audio/mp3">
+    </audio>
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+        (function() {
+
+            var 
+                socket = io.connect( window.location.href ),
+                $potato = $( '#potato' ),
+                $sound = $( '#sound' ),
+                clientId = null,
+                name
+            ;
+
+            name = prompt( 'What is your name?' );
+
+            if ( name ) {
+                socket.emit( 'join', name );
+                socket.on( 'joined', function( status, id ) {
+
+                    if ( status === 'ok' ) {
+                        clientId = id;
+
+                        $potato.click( function() {
+                            socket.emit( 'pass' );
+                        } );
+
+                        socket.on( 'potato moved', function( potatoPosition ) {
+                            if ( potatoPosition === clientId ) {
+                                $potato.show();
+                            } else {
+                                $potato.hide();
+                            }
+                        } );
+
+                        socket.on( 'stop', function( potatoPosition ) {
+                            $sound.get( 0 ).pause();
+                            if ( potatoPosition === clientId ) {
+                                $potato.text( 'You are out!' ).show();
+                                socket.disconnect();
+                            }
+                        } );
+
+                        socket.on( 'start', function() {
+                            $sound.get( 0 ).play();
+                        } );
+                    } else {
+                        alert( 'The game is full or unavailable' );
+                    }
+
+                } );
+            }
+        } )();
+
+    </script>
+</body>
+</html>
