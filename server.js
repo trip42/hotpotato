@@ -5,7 +5,7 @@ var
     , io = require( 'socket.io' ).listen( server )
     , port = process.env.PORT || 5000
     , players = []
-    , maxPlayers = 3
+    , maxPlayers = 2
     , potatoPosition = 0
     , timer = null
 ;
@@ -57,6 +57,7 @@ function movePotato( offset ) {
 function endGame() {
     io.sockets.emit( 'disconnect' );
     players = [];
+    potatoPosition = 0;
 }
 
 function startTimer() {
