@@ -16,6 +16,14 @@ app.get( '/', function( req, res ) {
     res.sendFile( __dirname + '/static/client.html' );
 });
 
+app.get( '/status', function( req, res ) {
+    res.send( JSON.stringify({
+        players: players,
+        maxPlayers: maxPlayers,
+        potatoPosition: potatoPosition
+    }, null, 4 ) );
+});
+
 // serve static files
 app.use( express.static( __dirname + '/static/' ) );
 
