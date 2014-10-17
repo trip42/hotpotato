@@ -5,10 +5,10 @@
 </head>
 <body style="text-align: center;">
 
-    <div id="potato">
-        <img src="/potato.jpg" alt="potato" style="width: 100%;"/>
-    </div>
     <div id="msg"></div>
+    <div id="potato">
+        <img src="/potato.jpg" alt="potato" style="width: 100%; max-width: 450px;"/>
+    </div>
 
     <audio id="sound" loop="true">
       <source src="hotpotato.mp3" type="audio/mp3">
@@ -45,6 +45,7 @@
                         socket.on( 'potato moved', function( player ) {
                             if ( player.clientId === clientId ) {
                                 $potato.show();
+                                $msg.text( 'You have the potato' );
                             } else {
                                 $potato.hide();
                                 $msg.text( player.name + ' has the potato' );

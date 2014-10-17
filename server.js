@@ -61,24 +61,28 @@ function endGame() {
 }
 
 function startTimer() {
-    var time = Math.floor( Math.random() * ( 30000 - 5000 ) ) + 5000;
+    var time = Math.floor( Math.random() * ( 25000 - 5000 ) ) + 5000;
 
     io.sockets.emit( 'start' );
 
     setTimeout( function() {
         var player = players[ potatoPosition ];
+        var playersRemaining = getPlayersRemaining();
 
         player.alive = false;
 
         movePotato( 1 );
 
         io.sockets.emit( 'stop', player );
+
         console.log( 'player out', JSON.stringify( player ) );
 
-        if ( getPlayersRemaining() > 1 ) {
+        if ( playersRemaining > 1 ) {
             setTimeout( startTimer, 10000 );
-        } else {
+        } else if ( playersRemaining === 1 ) {
             io.sockets.emit( 'winner', players[ potatoPosition ] );
+            endGame();
+        } else {
             endGame();
         }
 
