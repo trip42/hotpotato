@@ -39,6 +39,8 @@
                         clientId = id;
 
                         $potato.click( function() {
+                            $potato.hide();
+                            $msg.text( 'passing the potato' );
                             socket.emit( 'pass' );
                         } );
 
@@ -55,7 +57,7 @@
                         socket.on( 'stop', function( player ) {
                             $sound.get( 0 ).pause();
                             if ( player.clientId === clientId ) {
-                                $msg.text( 'You are out!' ).show();
+                                $msg.text( 'You are out!' );
                                 socket.disconnect();
                             } else {
                                 $msg.text( player.name + ' is out!' );
