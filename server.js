@@ -8,7 +8,6 @@ var
     , maxPlayers = 3
     , potatoPosition = 0
     , timer = null
-    , host = null
 ;
 
 server.listen( port );
@@ -20,7 +19,19 @@ app.get( '/', function( req, res ) {
 // serve static files
 app.use( express.static( __dirname + '/static/' ) );
 
+function getPlayersRemaining() {
+    var numPlayers = 0;
+    for ( var i in players ) {
+        if ( players[ i ].alive ) {
+            numPlayers++;
+        }
+    }
+    return numPlayers;
+}
+
 function movePotato( offset ) {
+    var player;
+
     // move the potato
     potatoPosition += offset;
 
@@ -30,31 +41,45 @@ function movePotato( offset ) {
         potatoPosition = players.length - 1;
     }
 
-    if ( players[ potatoPosition ].alive ) {
-        console.log( players[ potatoPosition ].name );
-        io.sockets.emit( 'potato moved', potatoPosition );
-    } else {
+    player = players[ potatoPosition ];
+
+    if ( player.alive ) {
+        console.log( 'potato moved', potatoPosition, JSON.stringify( player ) );
+        io.sockets.emit( 'potato moved', player );
+    } else if ( getPlayersRemaining() ) {
         movePotato( offset );
+    } else {
+        console.log( 'where did everybody go?' );
+        endGame();
     }
+}
+
+function endGame() {
+    io.sockets.emit( 'disconnect' );
+    players = [];
 }
 
 function startTimer() {
     var time = Math.floor( Math.random() * ( 30000 - 5000 ) ) + 5000;
 
     io.sockets.emit( 'start' );
-    console.log( 'start', time );
 
     setTimeout( function() {
         var player = players[ potatoPosition ];
 
         player.alive = false;
 
-        console.log( player.name, ' is out' );
         movePotato( 1 );
 
-        io.sockets.emit( 'stop', player.clientId );
+        io.sockets.emit( 'stop', player );
+        console.log( 'player out', JSON.stringify( player ) );
 
-        setTimeout( startTimer, 10000 );
+        if ( getPlayersRemaining() > 1 ) {
+            setTimeout( startTimer, 10000 );
+        } else {
+            io.sockets.emit( 'winner', players[ potatoPosition ] );
+            endGame();
+        }
 
     }, time )
 }
@@ -86,14 +111,14 @@ io.on( 'connection', function( socket ) {
                 }
             } );
 
-            console.log( 'Player', player.name, 'joined' );
+            io.sockets.emit( 'join', player );
             socket.emit( 'joined', 'ok', player.clientId );
-            socket.emit( 'potato moved', potatoPosition );
+            socket.emit( 'potato moved', players[ potatoPosition ] );
 
             if ( players.length === maxPlayers ) {
                 startTimer();
             } else {
-                console.log( 'need', maxPlayers - players.length, 'more players' );
+                io.sockets.emit( 'need players', maxPlayers - players.length );
             }
         }
     } );

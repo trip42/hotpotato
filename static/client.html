@@ -6,15 +6,15 @@
 <body style="text-align: center;">
 
     <div id="potato">
-        <img src="/potato.jpg" alt="potato" />
+        <img src="/potato.jpg" alt="potato" style="width: 100%;"/>
     </div>
+    <div id="msg"></div>
 
     <audio id="sound" loop="true">
       <source src="hotpotato.mp3" type="audio/mp3">
     </audio>
 
     <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
 
@@ -24,6 +24,7 @@
                 socket = io.connect( window.location.href ),
                 $potato = $( '#potato' ),
                 $sound = $( '#sound' ),
+                $msg = $( '#msg' ),
                 clientId = null,
                 name
             ;
@@ -41,24 +42,35 @@
                             socket.emit( 'pass' );
                         } );
 
-                        socket.on( 'potato moved', function( potatoPosition ) {
-                            if ( potatoPosition === clientId ) {
+                        socket.on( 'potato moved', function( player ) {
+                            if ( player.clientId === clientId ) {
                                 $potato.show();
                             } else {
                                 $potato.hide();
+                                $msg.text( player.name + ' has the potato' );
                             }
                         } );
 
-                        socket.on( 'stop', function( potatoPosition ) {
+                        socket.on( 'stop', function( player ) {
                             $sound.get( 0 ).pause();
-                            if ( potatoPosition === clientId ) {
-                                $potato.text( 'You are out!' ).show();
+                            if ( player.clientId === clientId ) {
+                                $msg.text( 'You are out!' ).show();
                                 socket.disconnect();
+                            } else {
+                                $msg.text( player.name + ' is out!' );
                             }
+                        } );
+
+                        socket.on( 'need players', function( numNeeded ) {
+                            $msg.text( 'Need ' + numNeeded + ' more players' );
                         } );
 
                         socket.on( 'start', function() {
                             $sound.get( 0 ).play();
+                        } );
+
+                        socket.on( 'winner', function( player ) {
+                            $msg.text( player.name + ' wins!' );
                         } );
                     } else {
                         alert( 'The game is full or unavailable' );
