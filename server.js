@@ -5,7 +5,7 @@ var
     , io = require( 'socket.io' ).listen( server )
     , port = process.env.PORT || 5000
     , players = []
-    , maxPlayers = 20 
+    , maxPlayers = 7
     , potatoPosition = 0
     , timer = null
 ;
